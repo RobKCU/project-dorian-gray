@@ -1,0 +1,12 @@
+/.venv
+.DS_Store
+*.pyc
+__pycache__/
+.env
+data/browser_history/
+data/inputs/*.jpg
+data/inputs/*.jpeg
+data/inputs/*.png
+data/portrait_state.json
+data/outputs/
+output/logs/bot.log

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.robking.dorian-gray-bsky</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/robking/.dorian_gray_bot/scripts/daily_run.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/robking/.dorian_gray_bot</string>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>8</integer>
+    <key>Minute</key>
+    <integer>30</integer>
+  </dict>
+
+  <key>StartInterval</key>
+  <integer>1800</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/robking/.dorian_gray_bot/data/outputs/bot.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/robking/.dorian_gray_bot/data/outputs/bot.err.log</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>
