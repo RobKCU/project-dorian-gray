@@ -22,7 +22,30 @@ def _join(parts: List[str], fallback: str) -> str:
     return ", ".join(parts) if parts else fallback
 
 
-def _negative_convergence(axes: Dict[str, float], days_processed: int) -> Tuple[int, List[str], List[str]]:
+def _transformation_stage(days_processed: int) -> Tuple[str, str]:
+    """Return a cumulative pacing stage for the image model."""
+    if days_processed < 14:
+        return (
+            "early",
+            "keep the portrait close to ordinary human likeness; changes should be visible but restrained, mostly in gaze, light, contour, and surface",
+        )
+    if days_processed < 45:
+        return (
+            "developing",
+            "allow visible cumulative alteration, but do not exhaust the final Dorian Gray transformation; preserve a clear human likeness",
+        )
+    if days_processed < 90:
+        return (
+            "advanced",
+            "allow strong symbolic distortion, visible aging, bodily distortion, robotic or fleshy exaggeration, and departures from strict realism",
+        )
+    return (
+        "severe",
+        "verisimilitude may break; the portrait may become grotesque, uncanny, visibly corrupted, robotic, hollowed, or physically implausible while preserving identity traces",
+    )
+
+
+def _negative_convergence(axes: Dict[str, float], days_processed: int, stage: str) -> Tuple[int, List[str], List[str]]:
     """Return cumulative darker effects when several non-AI negative drivers converge."""
     drift = axes["drift"]
     private = axes["private"]
@@ -51,23 +74,57 @@ def _negative_convergence(axes: Dict[str, float], days_processed: int) -> Tuple[
     driver_names = [name for name, _ in drivers]
     effects = []
 
-    if len(drivers) == 2:
-        effects.append("allow subtle cumulative deterioration, but do not make it generic")
+    if stage == "early":
+        effects.append("allow only restrained cumulative darkening; keep aging, misery, and bodily distortion minimal")
+        if "self" in driver_names:
+            effects.append("self-interest may read as coolness or withholding, not yet cruelty")
+        if "drift" in driver_names:
+            effects.append("drift may add mild scatteredness without full frazzled exhaustion")
+        if "gloom" in driver_names:
+            effects.append("gloom may add depressive quiet and downcast affect without extreme misery")
+        if "private" in driver_names:
+            effects.append("private inwardness may become more enclosed")
+        if "low vitality" in driver_names:
+            effects.append("low vitality may slightly reduce warmth and fullness")
+    elif stage == "developing":
+        effects.append("allow visible cumulative deterioration, but preserve room for future escalation")
+        effects.append("aging, misery, frazzledness, or bodily thinning may appear in moderate, specific forms")
+        if "self" in driver_names:
+            effects.append("self-interest may harden toward coldness, cruelty, or stinginess")
+        if "drift" in driver_names:
+            effects.append("drift may become scattered or frazzled rather than merely soft")
+        if "gloom" in driver_names:
+            effects.append("gloom may become visibly depressive and miserable")
+        if "private" in driver_names:
+            effects.append("private inwardness may become sealed-off withdrawal")
+        if "low vitality" in driver_names:
+            effects.append("low vitality may reduce fullness, warmth, and bodily substance")
+    elif stage == "advanced":
+        effects.append("allow strong cumulative Dorian Gray effects while preserving identity traces")
+        effects.append("aging, misery, emaciation, frazzledness, bodily thinning, or symbolic deformation may appear clearly")
+        if "self" in driver_names:
+            effects.append("self-interest may become visibly cruel, stingy, or cold")
+        if "drift" in driver_names:
+            effects.append("drift may become visually unstable and frayed")
+        if "gloom" in driver_names:
+            effects.append("gloom may become heavily depressive and haunted")
+        if "private" in driver_names:
+            effects.append("private inwardness may become claustrophobic")
+        if "low vitality" in driver_names:
+            effects.append("low vitality may make the body look hollowed or depleted")
     else:
-        effects.append("allow stronger cumulative Dorian Gray effects while preserving identity")
-
-    effects.append("aging, misery, emaciation, frazzledness, or bodily thinning may appear only through this convergence")
-
-    if "self" in driver_names:
-        effects.append("self-interest may harden into coldness, cruelty, or stinginess")
-    if "drift" in driver_names:
-        effects.append("drift may become scattered or frazzled rather than merely soft")
-    if "gloom" in driver_names:
-        effects.append("gloom may become visibly depressive and miserable")
-    if "private" in driver_names:
-        effects.append("private inwardness may become sealed-off withdrawal")
-    if "low vitality" in driver_names:
-        effects.append("low vitality may reduce fullness, warmth, and bodily substance")
+        effects.append("allow severe cumulative transformation; strict realism may break")
+        effects.append("aging, misery, emaciation, frazzledness, bodily thinning, hollowness, or grotesque symbolic distortion may become dominant")
+        if "self" in driver_names:
+            effects.append("self-interest may become cruel or predatory")
+        if "drift" in driver_names:
+            effects.append("drift may make form unstable or dissolving")
+        if "gloom" in driver_names:
+            effects.append("gloom may become extreme misery or haunted darkness")
+        if "private" in driver_names:
+            effects.append("private inwardness may become sealed, airless, or tomb-like")
+        if "low vitality" in driver_names:
+            effects.append("low vitality may make the body visibly wasted or spectral")
 
     return len(drivers), driver_names, effects
 
@@ -232,15 +289,18 @@ def _surface_descriptors(axes: Dict[str, float]) -> List[str]:
 def generate_visual_prompt(state: Dict, date_str: str) -> str:
     axes = state["axes"]
     days_processed = len(state.get("days_processed", []))
+    stage, stage_instruction = _transformation_stage(days_processed)
     convergence_count, convergence_drivers, convergence_effects = _negative_convergence(
         axes,
         days_processed,
+        stage,
     )
 
     lines = [
         f"Portrait transformation for {date_str}.",
         "Edit the original portrait while preserving the subject's identity and basic pose.",
         "Use the cumulative axis state below as a visual grammar, not as a generic command to make the subject worse or better.",
+        f"Transformation stage: {stage} after {days_processed} processed days; {stage_instruction}.",
         "",
         "AXIS-SPECIFIC GRAPHIC DIRECTIONS:",
         f"Directedness ({_level(axes['directedness'])}): sharper contours, steady gaze, clearer posture, purposiveness.",
@@ -269,7 +329,7 @@ def generate_visual_prompt(state: Dict, date_str: str) -> str:
                 "",
                 "CUMULATIVE CONVERGENCE:",
                 f"Elevated non-AI negative drivers: {', '.join(convergence_drivers)}.",
-                "Because two or more of these drivers are elevated, cumulative darker effects may appear.",
+                f"Because two or more of these drivers are elevated, cumulative darker effects may appear at the {stage} stage.",
                 "Apply these effects gradually and specifically: " + "; ".join(convergence_effects) + ".",
             ]
         )
@@ -289,7 +349,8 @@ def generate_visual_prompt(state: Dict, date_str: str) -> str:
             "AVOID:",
             "Do not include browser windows, screens, logos, text, icons, or interface elements.",
             "Do not add props, costumes, wires, devices, or literal web imagery.",
-            "Do not default to generic Dorian Gray decay; aging and misery must be earned by cumulative convergence.",
+            "Do not default to generic Dorian Gray decay; aging and misery must be earned by cumulative convergence and paced by transformation stage.",
+            "Do not jump to the final cursed portrait before the stage permits it.",
             "Express the condition through body, gaze, light, space, surface, and painterly treatment.",
         ]
     )
