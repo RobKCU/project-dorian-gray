@@ -21,7 +21,7 @@ The daily activity is classified into broad patterns: work, reference, generativ
 Those signals are translated into a set of cumulative portrait axes. The axes are not moral judgments and they are not simple opposites. They are independent tendencies that can coexist in the same day:
 
 - **Directedness / Drift**: focus, purpose, wandering, diffusion.
-- **Public / Private**: exposure to the world, withdrawal, enclosure.
+- **Public / Private**: exposure to the world, withdrawal, enclosure, entrapment.
 - **Self / Others**: self-reference, relation, correspondence, attention to other people.
 - **Vitality / Gloom**: restoration, depletion, warmth, shadow.
 - **AI Mediation / Direct Engagement**: synthetic assistance, direct encounter, delegated or unmediated attention.
