@@ -2,6 +2,7 @@
 .DS_Store
 *.pyc
 __pycache__/
+.pytest_cache/
 .env
 data/browser_history/
 data/inputs/*.jpg
@@ -9,4 +10,10 @@ data/inputs/*.jpeg
 data/inputs/*.png
 data/portrait_state.json
 data/outputs/
-output/logs/bot.log
+data/state.json
+data/state.tmp
+data/chain/
+data/records/
+data/logs/
+data/.daily_run.lock
+review/

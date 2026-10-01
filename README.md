@@ -10,7 +10,7 @@ The bot posts one image per day to Bluesky.
 
 The first post is the base portrait. It is not a neutral starting point or a lack of transformation; it is the first act of exposure. From there, the portrait is updated gradually, accumulating a visible history of daily contact with networked life.
 
-The changes are cumulative rather than episodic. Each new image is generated from the original portrait plus the current accumulated state. The bot does not simply edit yesterday's image again; it returns to the base portrait and asks what the accumulated condition should now look like.
+The changes are cumulative in the most literal way: each day's image is made by editing the previous day's JPEG. Nothing is restored. Small daily alterations compound, and the artefacts of repeated machine processing (compression, smoothing, re-interpretation) are allowed to accumulate along with them. It is, after all, a JPEG and not an oil painting.
 
 ## How the program works
 
@@ -28,7 +28,9 @@ Those signals are translated into a set of cumulative portrait axes. The axes ar
 
 Each day nudges these axes rather than replacing them. Some effects fade; others leave residue. Over time the portrait develops a cumulative state: not a literal log of websites visited, but a symbolic pressure field built from repeated patterns.
 
-That state is then translated into visual instructions: changes to gaze, skin, posture, light, texture, atmosphere, and painterly handling. The portrait should not show browser windows, logos, screens, or literal evidence. The transformation is meant to remain embodied.
+Each day, only a few of these tendencies are allowed to act. They act on different parts of the picture in turn (composition, background, light, posture, gaze, mouth, skin, surface, depth, and faint traces of the world and of other people), so the change wanders across the whole image rather than settling on one feature. A pattern that breaks with the recent past is noticed first. Days spent largely away from the browser count toward vitality: redemption is possible, but it has to be earned edit by edit.
+
+The portrait should not show browser windows, logos, screens, or literal evidence. The transformation is meant to remain embodied.
 
 ## Captions
 
@@ -46,7 +48,7 @@ Examples include terms such as mediation, scrolling, compression, display, telem
 
 The public bot posts only the image and its brief caption.
 
-Alongside the public feed, the project maintains a fuller local archive: the current portrait, day-by-day image files, metadata, transformation rationales, axis scores, prompt text, and an HTML document for reviewing the day's state. That archive is part of the working system, but it is not posted publicly by the bot.
+Alongside the public feed, the project maintains a fuller local archive: every frame in the image lineage, the day's scores, the edits chosen and the prompt sent, and an HTML page for reviewing the run. That archive is part of the working system, but it is not posted publicly by the bot.
 
 The public image is therefore only the visible edge of a larger private record.
 
@@ -74,3 +76,16 @@ The exact implementation may change as the project develops. The central structu
 ## Status
 
 Project Dorian Gray is a work in progress and an ongoing bot project. The portrait is still accumulating.
+
+## Running it
+
+```bash
+bash scripts/install.sh                         # installs to ~/.dorian_gray_bot and schedules a daily review run
+cd ~/.dorian_gray_bot
+.venv/bin/python -m dorian_bot.bot --status      # where things stand
+.venv/bin/python -m dorian_bot.bot --dry-run     # preview tomorrow's edit; nothing generated or saved
+.venv/bin/python -m dorian_bot.bot --post-latest # publish the newest frame (the scheduled run never posts)
+python scripts/simulate.py 2026-06-01 2026-09-30 # replay history through the selection logic, no images
+```
+
+Settings such as the image model and quality can be overridden in `.env` (`DORIAN_IMAGE_MODEL`, `DORIAN_IMAGE_QUALITY`).
