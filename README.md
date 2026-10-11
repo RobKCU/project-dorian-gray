@@ -14,11 +14,11 @@ The changes are cumulative in the most literal way: each day's image is made by 
 
 ## How the program works
 
-The bot reads a local, privacy-preserving summary of browser activity for a completed day. It does not use page contents, private messages, search text, email subjects, or raw browsing details in the public post.
+The bot reads a local, privacy-preserving summary of browser activity for a completed day: only which sites were visited and when. It never reads page contents, private messages, search text or email subjects. All classification happens on the machine where the bot runs. The image model receives yesterday's picture and a short instruction describing the day's edit, never any browsing data.
 
 The daily activity is classified into broad patterns: work, reference, generative AI, social platforms, video, news, search, entertainment, health, finance, and other forms of digital activity. The program also looks for temporal patterns: late-night use, repeated checking, long feed sessions, switching between domains, research chains, task focus, social connection, and other rhythms of attention.
 
-Those signals are translated into a set of cumulative portrait axes. The axes are not moral judgments and they are not simple opposites. They are independent tendencies that can coexist in the same day:
+Those signals are translated into a set of portrait axes. The axes are not moral judgments and they are not simple opposites. They are independent tendencies that can coexist in the same day:
 
 - **Directedness / Drift**: focus, purpose, wandering, diffusion.
 - **Public / Private**: exposure to the world, withdrawal, enclosure, entrapment.
@@ -26,7 +26,7 @@ Those signals are translated into a set of cumulative portrait axes. The axes ar
 - **Vitality / Gloom**: restoration, depletion, warmth, shadow.
 - **AI Mediation / Direct Engagement**: synthetic assistance, direct encounter, delegated or unmediated attention.
 
-Each day nudges these axes rather than replacing them. Some effects fade; others leave residue. Over time the portrait develops a cumulative state: not a literal log of websites visited, but a symbolic pressure field built from repeated patterns.
+There is no hidden score that the portrait is drawn from. The image is its own memory: whatever happened to it yesterday is still there today, and each day only adds to it. Repeated patterns therefore leave deeper marks, not because a number climbs, but because the same kinds of edit keep landing on an already altered face.
 
 Each day, only a few of these tendencies are allowed to act. They act on different parts of the picture in turn (composition, background, light, posture, gaze, mouth, skin, surface, depth, and faint traces of the world and of other people), so the change wanders across the whole image rather than settling on one feature. A pattern that breaks with the recent past is noticed first. Days spent largely away from the browser count toward vitality: redemption is possible, but it has to be earned edit by edit.
 
@@ -40,9 +40,9 @@ Each post uses a brief caption in the form:
 The jpeg absorbs a day of [BLANK].
 ```
 
-The blank is chosen from a controlled vocabulary of allusive terms: words related to digital mediation, decay, display, circulation, memory, attention, and drift.
+The blank is chosen from a controlled vocabulary of allusive terms, keyed to whichever tendency led that day's edit. A word is not repeated within a dozen posts.
 
-Examples include terms such as mediation, scrolling, compression, display, telemetry, synthesis, circulation, fragmentation, latency, forgetting, and repetition. The captions are deliberately ambiguous. They are not meant as literal summaries of the day, but as small verbal pressure marks beside the image.
+Examples include drift, latency, exposure, withdrawal, self-regard, correspondence, renewal, sediment, synthesis, interpolation, grain, telemetry, insomnia, and compression. The captions are deliberately ambiguous. They are not meant as literal summaries of the day, but as small verbal pressure marks beside the image.
 
 ## The local archive
 
@@ -64,7 +64,7 @@ This repository contains the public materials and working code for the Bluesky b
 
 - the bot logic that prepares a daily portrait post;
 - local browser-history summarization and classification code;
-- the cumulative axis/state system;
+- the daily selection of edits across eleven parts of the picture;
 - the controlled caption vocabulary and caption selection logic;
 - image-generation and Bluesky posting utilities;
 - local archive/report generation;
@@ -75,7 +75,7 @@ The exact implementation may change as the project develops. The central structu
 
 ## Status
 
-Project Dorian Gray is a work in progress and an ongoing bot project. The portrait is still accumulating.
+The current run began on 11 October 2026 with the unaltered base photograph. An earlier version of the bot, which re-rendered the original photograph each day, ran from June to September 2026 and has been retired. The portrait is still accumulating.
 
 ## Running it
 
