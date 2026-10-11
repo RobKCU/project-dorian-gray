@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run by launchd. Makes the next frame for review. Never posts.
+# Run by launchd. Makes the next frame and posts it to Bluesky.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -18,4 +18,4 @@ if ! mkdir "$lock_dir" 2>/dev/null; then
 fi
 trap 'rmdir "$lock_dir"' EXIT
 
-.venv/bin/python -m dorian_bot.bot --copy-history
+.venv/bin/python -m dorian_bot.bot --copy-history --post

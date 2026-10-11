@@ -5,9 +5,10 @@
     python -m dorian_bot.bot --dry-run       show what would happen; no image, nothing saved
     python -m dorian_bot.bot --mock-image    use a free stand-in for the OpenAI edit (testing)
     python -m dorian_bot.bot --status        print where things stand
-    python -m dorian_bot.bot --post-latest   post the newest unposted frame to Bluesky
+    python -m dorian_bot.bot --post          make the next frame, then post anything unposted
+    python -m dorian_bot.bot --post-latest   only post unposted frames; make nothing new
 
-The scheduled job never posts. Posting only happens with --post-latest.
+The scheduled job runs with --post. Without it, nothing is published.
 """
 
 from datetime import date, datetime, timedelta
@@ -46,7 +47,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dry-run", action="store_true", help="Show the planned edit without generating or saving anything.")
     p.add_argument("--mock-image", action="store_true", help="Use a free local stand-in instead of OpenAI.")
     p.add_argument("--status", action="store_true", help="Print current state and exit.")
-    p.add_argument("--post-latest", action="store_true", help="Post the newest unposted frame to Bluesky.")
+    p.add_argument("--post", action="store_true", help="After making the frame, post any unposted frames to Bluesky.")
+    p.add_argument("--post-latest", action="store_true", help="Only post unposted frames; make nothing new.")
     return p.parse_args()
 
 
@@ -163,33 +165,39 @@ def absorb(state: Dict, through: date, dry: bool, mock: bool) -> int:
     return 0
 
 
-def post_latest(state: Dict) -> int:
+MAX_POSTS_PER_RUN = 3
+
+
+def post_pending(state: Dict) -> int:
+    """Post every unposted frame, oldest first. A failed post is retried on the next run."""
     from .bluesky import BlueskyClient
 
-    if not state["frames"]:
-        print("Nothing to post yet.")
+    pending = [f for f in state["frames"] if not f.get("posted") and not f.get("mock")]
+    if not pending:
+        print("Nothing waiting to be posted.")
         return 0
-    frame = state["frames"][-1]
-    if frame.get("posted"):
-        print(f"Day {frame['day']} is already posted.")
-        return 0
-    if frame.get("mock"):
-        print(f"Day {frame['day']} was made with the mock image; not posting it.")
+    pending = pending[:MAX_POSTS_PER_RUN]
+    try:
+        client = BlueskyClient()
+        client.login()
+        for frame in pending:
+            prepared, width, height, mime = prepare_for_bluesky(
+                frame_path(frame["day"]), REVIEW_DIR / "_bluesky_upload.jpg"
+            )
+            result = client.create_image_post(
+                text=frame["caption"], image_path=prepared,
+                alt_text=f"Day {frame['day']} of a portrait that re-processes itself once a day.",
+                width=width, height=height, mime_type=mime,
+            )
+            frame.update(posted=True, post_uri=result.get("uri"),
+                         posted_at=datetime.now().isoformat(timespec="seconds"))
+            save_state(state)
+            log(f"Posted day {frame['day']} to Bluesky: {result.get('uri')}")
+    except Exception as exc:
+        log(f"Posting failed (will retry next run): {exc}")
+        write_index(state)
         return 1
-    prepared, width, height, mime = prepare_for_bluesky(
-        frame_path(frame["day"]), REVIEW_DIR / "_bluesky_upload.jpg"
-    )
-    client = BlueskyClient()
-    client.login()
-    result = client.create_image_post(
-        text=frame["caption"], image_path=prepared,
-        alt_text=f"Day {frame['day']} of a portrait that re-processes itself once a day.",
-        width=width, height=height, mime_type=mime,
-    )
-    frame.update(posted=True, post_uri=result.get("uri"), posted_at=datetime.now().isoformat(timespec="seconds"))
     write_index(state)
-    save_state(state)
-    log(f"Posted day {frame['day']} to Bluesky: {result.get('uri')}")
     return 0
 
 
@@ -212,7 +220,7 @@ def main() -> int:
         print_status(state)
         return 0
     if args.post_latest:
-        return post_latest(state)
+        return post_pending(state)
 
     through = date.fromisoformat(args.through) if args.through else date.today() - timedelta(days=1)
     if args.copy_history and not args.dry_run:
@@ -223,12 +231,17 @@ def main() -> int:
         copy_chrome_history()
 
     if state["day"] == 0:
-        return make_first_frame(state, through, args.dry_run)
-    try:
-        return absorb(state, through, args.dry_run, args.mock_image)
-    except Exception as exc:  # keep state untouched on failure; the next scheduled run retries
-        log(f"Run failed, state unchanged: {exc}")
-        return 1
+        rc = make_first_frame(state, through, args.dry_run)
+    else:
+        try:
+            rc = absorb(state, through, args.dry_run, args.mock_image)
+        except Exception as exc:  # keep state untouched on failure; the next scheduled run retries
+            log(f"Run failed, state unchanged: {exc}")
+            rc = 1
+    if args.post and not args.dry_run:
+        # post even if today's frame failed, so an earlier unposted frame still goes out
+        rc = max(rc, post_pending(state))
+    return rc
 
 
 if __name__ == "__main__":

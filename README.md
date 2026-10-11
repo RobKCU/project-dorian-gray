@@ -80,11 +80,11 @@ Project Dorian Gray is a work in progress and an ongoing bot project. The portra
 ## Running it
 
 ```bash
-bash scripts/install.sh                         # installs to ~/.dorian_gray_bot and schedules a daily review run
+bash scripts/install.sh                         # installs to ~/.dorian_gray_bot and schedules the daily run (makes + posts)
 cd ~/.dorian_gray_bot
 .venv/bin/python -m dorian_bot.bot --status      # where things stand
 .venv/bin/python -m dorian_bot.bot --dry-run     # preview tomorrow's edit; nothing generated or saved
-.venv/bin/python -m dorian_bot.bot --post-latest # publish the newest frame (the scheduled run never posts)
+.venv/bin/python -m dorian_bot.bot --post-latest # post anything not yet posted (the daily run does this itself)
 python scripts/simulate.py 2026-06-01 2026-09-30 # replay history through the selection logic, no images
 ```
 
